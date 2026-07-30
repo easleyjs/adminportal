@@ -1,57 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Portal · Sign in</title>
-    <link rel="stylesheet" href="css/login.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Portal · Sign in</title>
+<link rel="stylesheet" href="css/login.css">
 </head>
 <body>
 
-<div class="card">
+  <div class="card">
     <h1>Admin sign in</h1>
     <p class="sub">Enter your credentials to access the control panel.</p>
 
     <div class="error" id="errorMsg">Incorrect username or password.</div>
 
     <form id="loginForm" autocomplete="on">
-        <div class="field">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="e.g. jsmith" autocomplete="username" required>
-        </div>
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="e.g. jsmith" autocomplete="username" required>
+      </div>
 
-        <div class="field">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
-        </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
 
-        <div class="row-between">
-            <label class="remember">
-                <input type="checkbox" id="remember" name="remember">
-                Keep me signed in
-            </label>
-        </div>
+      <div class="row-between">
+        <label class="remember">
+          <input type="checkbox" id="remember" name="remember">
+          Keep me signed in
+        </label>
+      </div>
 
-        <button type="submit">Sign in</button>
+      <button type="submit">Sign in</button>
     </form>
 
     <div class="forgot-wrap">
-        <a href="#">Forgot username / password?</a>
+      <a href="#">Forgot username / password?</a>
     </div>
-</div>
+  </div>
 
-<script>
-    // Placeholder submit handler — wire this up to your auth endpoint.
+  <script>
+    const errorMsg = document.getElementById('errorMsg');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+
+    function showLoginError(message){
+      errorMsg.textContent = message || 'Incorrect username or password.';
+      errorMsg.classList.add('visible', 'shake');
+      // restart the shake animation if it's already showing
+      errorMsg.addEventListener('animationend', () => {
+        errorMsg.classList.remove('shake');
+      }, { once: true });
+    }
+
+    function hideLoginError(){
+      errorMsg.classList.remove('visible');
+    }
+
+    // Hide the error as soon as the person starts correcting their input
+    usernameInput.addEventListener('input', hideLoginError);
+    passwordInput.addEventListener('input', hideLoginError);
+
     document.getElementById('loginForm').addEventListener('submit', function(e){
-        e.preventDefault();
-        // Example: show an error state on failed login
-        // document.getElementById('errorMsg').style.display = 'block';
-        console.log('Login submitted', {
-            username: document.getElementById('username').value,
-            remember: document.getElementById('remember').checked
-        });
+      e.preventDefault();
+
+      console.log('Login submitted', {
+        username: usernameInput.value,
+        remember: document.getElementById('remember').checked
+      });
+
+      // DEMO ONLY: always shows the error so you can see it in action.
+      // Replace this with your real auth call — call showLoginError() on
+      // failure, and hideLoginError() + redirect on success.
+      showLoginError();
     });
-</script>
+  </script>
 
 </body>
 </html>
