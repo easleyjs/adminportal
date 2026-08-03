@@ -40,6 +40,8 @@
     </div>
   </div>
 
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
   <script>
     const errorMsg = document.getElementById('errorMsg');
     const usernameInput = document.getElementById('username');
@@ -62,18 +64,15 @@
     usernameInput.addEventListener('input', hideLoginError);
     passwordInput.addEventListener('input', hideLoginError);
 
-    document.getElementById('loginForm').addEventListener('submit', function(e){
+    document.getElementById('loginForm').addEventListener('submit', async function(e){
       e.preventDefault();
 
-      console.log('Login submitted', {
-        username: usernameInput.value,
-        remember: document.getElementById('remember').checked
-      });
-
-      // DEMO ONLY: always shows the error so you can see it in action.
-      // Replace this with your real auth call — call showLoginError() on
-      // failure, and hideLoginError() + redirect on success.
-      showLoginError();
+      try {
+        await App.auth.login(usernameInput.value, passwordInput.value);
+        window.location.href = 'members.html';
+      } catch (err) {
+        showLoginError(err.message);
+      }
     });
   </script>
 

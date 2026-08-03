@@ -3,22 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Portal · Members</title>
+<title>Admin Portal · Door</title>
 <link rel="stylesheet" href="css/members.css">
 </head>
-<body>
+<body class="door-mode">
 
   <header class="header">
     <div class="header-top">
-      <h1>Members<span class="count" id="count"></span></h1>
+      <h1>Door<span class="count" id="count"></span></h1>
       <div class="user-menu">
         <button class="user-avatar" id="userMenuBtn" aria-haspopup="true" aria-expanded="false">JD</button>
         <div class="user-dropdown" id="userDropdown">
           <button class="user-dropdown-item" id="profileBtn">Profile</button>
+          <button class="user-dropdown-item" id="switchModeBtn">Switch to Admin</button>
           <button class="user-dropdown-item is-danger" id="logoutBtn">Logout</button>
         </div>
       </div>
     </div>
+    <button class="scan-btn visible" id="scanBtn" type="button">SCAN</button>
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="7"></circle>
@@ -29,7 +31,7 @@
     </div>
   </header>
 
-  <nav class="chips" id="chips">
+  <nav class="chips door-mode" id="chips">
     <button class="chip active" data-filter="all">All</button>
     <button class="chip" data-filter="admin">Admin</button>
     <button class="chip" data-filter="staff">Staff</button>
@@ -46,6 +48,7 @@
         <label for="perPage">Results per page</label>
         <select id="perPage">
           <option value="10">10</option>
+          <option value="15">15</option>
           <option value="20">20</option>
         </select>
       </div>
@@ -59,213 +62,12 @@
 
   <button class="fab" id="addBtn" title="Add member" aria-label="Add member">+</button>
 
-  <script>
-    // Sample data — replace with your API response
-    const members = [
-      { name: "Jane Doe",      role: "admin",  status: "active" },
-      { name: "Mike Chen",     role: "staff",  status: "active" },
-      { name: "Sam Rivera",    role: "member", status: "inactive" },
-      { name: "Priya Anand",   role: "member", status: "active" },
-      { name: "Wren Sokolov",  role: "member", status: "active" },
-      { name: "Devon Blake",   role: "staff",  status: "inactive" },
-      { name: "Terra Nguyen",  role: "member", status: "active" },
-      { name: "Alex Ferro",    role: "member", status: "inactive" },
-      { name: "Jarrett Cole",  role: "member", status: "active" },
-      { name: "Nina Ostrov",   role: "staff",  status: "active" },
-      { name: "Owen Marsh",    role: "member", status: "active" },
-      { name: "Ivy Calloway",  role: "member", status: "inactive" },
-      { name: "Leo Bautista",  role: "staff",  status: "active" },
-      { name: "Ruth Ellison",  role: "member", status: "active" },
-      { name: "Callum Reyes",  role: "member", status: "inactive" },
-      { name: "Freya Holt",    role: "member", status: "active" },
-      { name: "Marcus Diallo", role: "staff",  status: "active" },
-      { name: "Talia Novak",   role: "member", status: "inactive" },
-      { name: "Roman Kessler", role: "member", status: "active" },
-      { name: "Esme Whitlock", role: "admin",  status: "active" },
-      { name: "Gideon Park",   role: "member", status: "active" },
-      { name: "Aria Fontaine", role: "member", status: "inactive" },
-      { name: "Otis Bramwell", role: "member", status: "active" },
-      { name: "Lena Marchetti",role: "staff",  status: "inactive" },
-    ];
-
-    let activeFilter = "all";
-    let searchTerm = "";
-    let pageSize = 10;
-    let currentPage = 1;
-
-    function initials(name){
-      return name.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase();
-    }
-
-    function matchesFilter(m){
-      if (activeFilter === "all") return true;
-      if (activeFilter === "admin") return m.role === "admin";
-      if (activeFilter === "staff") return m.role === "staff";
-      if (activeFilter === "active") return m.status === "active";
-      if (activeFilter === "inactive") return m.status === "inactive";
-      return true;
-    }
-
-    function matchesSearch(m){
-      return m.name.toLowerCase().includes(searchTerm.trim().toLowerCase());
-    }
-
-    function render(){
-      const list = document.getElementById("list");
-      const empty = document.getElementById("empty");
-      const count = document.getElementById("count");
-      const pagination = document.getElementById("pagination");
-      const pageInfo = document.getElementById("pageInfo");
-      const prevPage = document.getElementById("prevPage");
-      const nextPage = document.getElementById("nextPage");
-
-      const filtered = members.filter(m => matchesFilter(m) && matchesSearch(m));
-
-      count.textContent = ` (${filtered.length})`;
-      list.innerHTML = "";
-
-      if (filtered.length === 0){
-        empty.style.display = "block";
-        pagination.style.display = "none";
-        return;
-      }
-      empty.style.display = "none";
-      pagination.style.display = "flex";
-
-      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-      if (currentPage > totalPages) currentPage = totalPages;
-      if (currentPage < 1) currentPage = 1;
-
-      const start = (currentPage - 1) * pageSize;
-      const pageItems = filtered.slice(start, start + pageSize);
-
-      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-      prevPage.disabled = currentPage <= 1;
-      nextPage.disabled = currentPage >= totalPages;
-
-      pageItems.forEach(m => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.tabIndex = 0;
-
-        const statusLabel = m.status === "active" ? "Active" : "Inactive";
-        const roleBadge = m.role === "admin"
-          ? `<span class="badge badge-role badge-role-admin">Admin</span>`
-          : m.role === "staff"
-          ? `<span class="badge badge-role">Staff</span>`
-          : "";
-
-        card.innerHTML = `
-          <div class="avatar">${initials(m.name)}</div>
-          <div class="card-body">
-            <div class="card-name">${m.name}</div>
-            <div class="card-tags">
-              ${roleBadge}
-              <span class="badge badge-status is-${m.status}">
-                <span class="dot"></span>${statusLabel}
-              </span>
-            </div>
-          </div>
-        `;
-
-        card.addEventListener("click", () => {
-          // Placeholder — open a member detail view here
-          console.log("Open member:", m.name);
-        });
-
-        list.appendChild(card);
-      });
-    }
-
-    document.getElementById("chips").addEventListener("click", (e) => {
-      const btn = e.target.closest(".chip");
-      if (!btn) return;
-      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-      btn.classList.add("active");
-      activeFilter = btn.dataset.filter;
-      currentPage = 1;
-      render();
-    });
-
-    document.getElementById("search").addEventListener("input", (e) => {
-      searchTerm = e.target.value;
-      document.getElementById("clearSearch").classList.toggle("visible", searchTerm.length > 0);
-      currentPage = 1;
-      render();
-    });
-
-    document.getElementById("clearSearch").addEventListener("click", () => {
-      const search = document.getElementById("search");
-      search.value = "";
-      searchTerm = "";
-      document.getElementById("clearSearch").classList.remove("visible");
-      currentPage = 1;
-      search.focus();
-      render();
-    });
-
-    document.getElementById("perPage").addEventListener("change", (e) => {
-      pageSize = parseInt(e.target.value, 10);
-      currentPage = 1;
-      render();
-    });
-
-    document.getElementById("prevPage").addEventListener("click", () => {
-      if (currentPage > 1){
-        currentPage--;
-        render();
-      }
-    });
-
-    document.getElementById("nextPage").addEventListener("click", () => {
-      currentPage++;
-      render();
-    });
-
-    document.getElementById("addBtn").addEventListener("click", () => {
-      // Placeholder — open an "add member" form here
-      console.log("Add member clicked");
-    });
-
-    // User menu dropdown
-    const userMenuBtn = document.getElementById("userMenuBtn");
-    const userDropdown = document.getElementById("userDropdown");
-
-    function closeUserMenu(){
-      userDropdown.classList.remove("open");
-      userMenuBtn.setAttribute("aria-expanded", "false");
-    }
-
-    userMenuBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = userDropdown.classList.toggle("open");
-      userMenuBtn.setAttribute("aria-expanded", String(isOpen));
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!userDropdown.contains(e.target) && e.target !== userMenuBtn){
-        closeUserMenu();
-      }
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeUserMenu();
-    });
-
-    document.getElementById("profileBtn").addEventListener("click", () => {
-      // Placeholder — navigate to profile page here
-      console.log("Profile clicked");
-      closeUserMenu();
-    });
-
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      // Placeholder — wire up to your auth logout endpoint here
-      console.log("Logout clicked");
-      closeUserMenu();
-    });
-
-    render();
-  </script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/door.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/members.js"></script>
 
 </body>
 </html>
