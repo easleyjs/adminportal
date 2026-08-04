@@ -1,0 +1,10 @@
+### Get all members
+
+GET http://localhost:8080/api/members
+Accept: application/json
+
+
+### Get one member
+
+GET http://localhost:8080/api/members/42
+Accept: application/json
