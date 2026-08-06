@@ -19,17 +19,17 @@ public class DataSeeder {
 
             if (memberRepository.count() == 0) {
                 memberRepository.saveAll(List.of(
-                        new Member("Peter", "Murphy", "p@bauhaus.com"),
-                        new Member("Bill", "Leeb", "keys@fla.com"),
-                        new Member("Siouxsie", "Sue", "siouxsie@banshees.com"),
-                        new Member("Wren", "Scheit", "wren@outland.com"),
-                        new Member("Andrew", "Eldritch", "sister@thesistersofmercy.com"),
-                        new Member("Robert", "Smith", "disintegration@thecure.com"),
-                        new Member("Nivek", "Ogre", "ogre@skinnypuppy.com"),
-                        new Member("Douglas", "McCarthy", "control@nitzer-ebb.com"),
-                        new Member("Ronny", "Moorings", "medusa@clanofxymox.com"),
-                        new Member("Sascha", "Konietzko", "ultraheavybeat@kmfdm.com"),
-                        new Member("Dave", "Gahan", "violator@depechemode.com")
+                        new Member("Peter", "Murphy", "p@bauhaus.com", 1001),
+                        new Member("Bill", "Leeb", "keys@fla.com", 1102),
+                        new Member("Siouxsie", "Sue", "siouxsie@banshees.com", 1103),
+                        new Member("Wren", "Scheit", "wren@outland.com", 1104),
+                        new Member("Andrew", "Eldritch", "sister@thesistersofmercy.com", 1105),
+                        new Member("Robert", "Smith", "disintegration@thecure.com", 1106),
+                        new Member("Nivek", "Ogre", "ogre@skinnypuppy.com", 1107),
+                        new Member("Douglas", "McCarthy", "control@nitzer-ebb.com", 1108),
+                        new Member("Ronny", "Moorings", "medusa@clanofxymox.com", 1109),
+                        new Member("Sascha", "Konietzko", "ultraheavybeat@kmfdm.com", 1110),
+                        new Member("Dave", "Gahan", "violator@depechemode.com", 1111)
                 ));
             }
         };
