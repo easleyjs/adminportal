@@ -4,17 +4,17 @@ package com.example.adminportal.dto;
 import com.example.adminportal.entity.Member;
 
 public record MemberResponse(
-        Long id,
         String firstName,
         String lastName,
-        String email
+        String email,
+        int memberId
 ) {
     public static MemberResponse from(Member member) {
         return new MemberResponse(
-                member.getId(),
                 member.getFirstName(),
                 member.getLastName(),
-                member.getEmail()
+                member.getEmail(),
+                member.getMemberNumber()
         );
     }
 }

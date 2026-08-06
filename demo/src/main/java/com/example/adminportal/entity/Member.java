@@ -19,10 +19,12 @@ public class Member {
     @Setter(AccessLevel.NONE)
     private Long id;
 
-    @Column(nullable = false, unique = true, updatable = false)
+    //TODO: Set nullable = false, unique = true, updatable = false later
+    @Column(nullable = true, unique = false, updatable = true)
     private UUID membershipId;
 
-    @Column(nullable = false, unique = true, updatable = false)
+    //TODO: Set nullable = false, unique = true, updatable = false later
+    @Column(nullable = true, unique = false, updatable = true)
     private int memberNumber;
 
     /*
@@ -58,9 +60,15 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private MemberStatus status;
 
-    public Member(String firstName, String lastName, String email) {
+    public Member(
+            String firstName,
+            String lastName,
+            String email,
+            int memberNumber
+    ) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.memberNumber = memberNumber;
     }
 }
