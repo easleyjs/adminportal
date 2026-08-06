@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "members")
 @Getter
@@ -17,6 +19,36 @@ public class Member {
     @Setter(AccessLevel.NONE)
     private Long id;
 
+    @Column(nullable = false, unique = true, updatable = false)
+    private UUID membershipId;
+
+    @Column(nullable = false, unique = true, updatable = false)
+    private int memberNumber;
+
+    /*
+    //TODO: Add sequence to db:
+       CREATE SEQUENCE member_number_seq
+       START WITH 1001
+       INCREMENT BY 1;
+
+    //TODO: Add callable query to repository:
+    @Query(value = "SELECT nextval('member_number_seq')", nativeQuery = true)
+    Long getNextMemberNumber();
+
+    //TODO: Generate sequence ids in member creation service
+    @Transactional
+    public Member createMember(...) {
+        Member member = new Member();
+
+        member.setMembershipId(UUID.randomUUID());
+        member.setMemberNumber(memberRepository.getNextMemberNumber());
+
+        // other fields...
+
+        return memberRepository.save(member);
+    }
+     */
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -25,4 +57,10 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     private MemberStatus status;
+
+    public Member(String firstName, String lastName, String email) {
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
 }
