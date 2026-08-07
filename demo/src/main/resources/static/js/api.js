@@ -68,13 +68,22 @@ window.App = window.App || {};
       return request("/auth/me", { method: "GET" });
     },
 
-    // --- Members ---
+    // --- Members (Door view — no role info) ---
     getMembers(params = {}) {
       const query = new URLSearchParams(params).toString();
       return request(`/members${query ? `?${query}` : ""}`, { method: "GET" });
     },
     getMember(id) {
       return request(`/members/${id}`, { method: "GET" });
+    },
+
+    // --- Users (Admin view — includes role; AppUser 1:1 Member) ---
+    getUsers(params = {}) {
+      const query = new URLSearchParams(params).toString();
+      return request(`/users${query ? `?${query}` : ""}`, { method: "GET" });
+    },
+    getUser(id) {
+      return request(`/users/${id}`, { method: "GET" });
     },
 
     // --- Admin actions ---
