@@ -6,40 +6,98 @@ window.App = window.App || {};
 
 (function () {
 
-  // Sample data — replace with App.api.getMembers() once the backend exists:
-  //   const members = await App.api.getMembers({ filter: activeFilter, q: searchTerm });
-  const members = [
-    { id: 1,  name: "Jane Doe",       role: "admin",  status: "active" },
-    { id: 2,  name: "Mike Chen",      role: "staff",  status: "active" },
-    { id: 3,  name: "Sam Rivera",     role: "member", status: "inactive" },
-    { id: 4,  name: "Priya Anand",    role: "member", status: "active" },
-    { id: 5,  name: "Wren Sokolov",   role: "member", status: "active" },
-    { id: 6,  name: "Devon Blake",    role: "staff",  status: "inactive" },
-    { id: 7,  name: "Terra Nguyen",   role: "member", status: "active" },
-    { id: 8,  name: "Alex Ferro",     role: "member", status: "inactive" },
-    { id: 9,  name: "Jarrett Cole",   role: "member", status: "active" },
-    { id: 10, name: "Nina Ostrov",    role: "staff",  status: "active" },
-    { id: 11, name: "Owen Marsh",     role: "member", status: "active" },
-    { id: 12, name: "Ivy Calloway",   role: "member", status: "inactive" },
-    { id: 13, name: "Leo Bautista",   role: "staff",  status: "active" },
-    { id: 14, name: "Ruth Ellison",   role: "member", status: "active" },
-    { id: 15, name: "Callum Reyes",   role: "member", status: "inactive" },
-    { id: 16, name: "Freya Holt",     role: "member", status: "active" },
-    { id: 17, name: "Marcus Diallo",  role: "staff",  status: "active" },
-    { id: 18, name: "Talia Novak",    role: "member", status: "inactive" },
-    { id: 19, name: "Roman Kessler",  role: "member", status: "active" },
-    { id: 20, name: "Esme Whitlock",  role: "admin",  status: "active" },
-    { id: 21, name: "Gideon Park",    role: "member", status: "active" },
-    { id: 22, name: "Aria Fontaine",  role: "member", status: "inactive" },
-    { id: 23, name: "Otis Bramwell",  role: "member", status: "active" },
-    { id: 24, name: "Lena Marchetti", role: "staff",  status: "inactive" },
-  ];
+  // Sample data — kept for reference/offline testing. Live data now comes
+  // from GET /api/members (Door view) or GET /api/users (Admin view) via
+  // loadData() below.
+  //
+  // const SAMPLE_MEMBERS = [
+  //   { id: 1,  name: "Jane Doe",       role: "admin",  status: "active" },
+  //   { id: 2,  name: "Mike Chen",      role: "staff",  status: "active" },
+  //   { id: 3,  name: "Sam Rivera",     role: "member", status: "inactive" },
+  //   { id: 4,  name: "Priya Anand",    role: "member", status: "active" },
+  //   { id: 5,  name: "Wren Sokolov",   role: "member", status: "active" },
+  //   { id: 6,  name: "Devon Blake",    role: "staff",  status: "inactive" },
+  //   { id: 7,  name: "Terra Nguyen",   role: "member", status: "active" },
+  //   { id: 8,  name: "Alex Ferro",     role: "member", status: "inactive" },
+  //   { id: 9,  name: "Jarrett Cole",   role: "member", status: "active" },
+  //   { id: 10, name: "Nina Ostrov",    role: "staff",  status: "active" },
+  //   { id: 11, name: "Owen Marsh",     role: "member", status: "active" },
+  //   { id: 12, name: "Ivy Calloway",   role: "member", status: "inactive" },
+  //   { id: 13, name: "Leo Bautista",   role: "staff",  status: "active" },
+  //   { id: 14, name: "Ruth Ellison",   role: "member", status: "active" },
+  //   { id: 15, name: "Callum Reyes",   role: "member", status: "inactive" },
+  //   { id: 16, name: "Freya Holt",     role: "member", status: "active" },
+  //   { id: 17, name: "Marcus Diallo",  role: "staff",  status: "active" },
+  //   { id: 18, name: "Talia Novak",    role: "member", status: "inactive" },
+  //   { id: 19, name: "Roman Kessler",  role: "member", status: "active" },
+  //   { id: 20, name: "Esme Whitlock",  role: "admin",  status: "active" },
+  //   { id: 21, name: "Gideon Park",    role: "member", status: "active" },
+  //   { id: 22, name: "Aria Fontaine",  role: "member", status: "inactive" },
+  //   { id: 23, name: "Otis Bramwell",  role: "member", status: "active" },
+  //   { id: 24, name: "Lena Marchetti", role: "staff",  status: "inactive" },
+  // ];
+
+  let members = [];
+  let isLoading = true;
+  let loadError = null;
+  let hasLoadedOnce = false;
 
   let activeFilter = "all";
   let searchTerm = "";
   let pageSize = 10;
   let currentPage = 1;
   let mode = "door"; // "door" | "admin" — Door is the default; Admin requires the admin role
+
+  // Door view — GET /api/members returns:
+  //   { memberNumber: <int>, firstName, lastName, status: "ACTIVE" | "INACTIVE" }
+  // No role info here, and Door staff don't need it.
+  function normalizeMember(raw) {
+    return {
+      id: raw.memberNumber,
+      name: `${raw.firstName || ""} ${raw.lastName || ""}`.trim(),
+      status: (raw.status || "").toLowerCase(),
+      role: undefined,
+    };
+  }
+
+  // Admin view — GET /api/users. AppUser <-> Member is 1:1, so this is
+  // assumed to return the member fields plus `role` — either flattened
+  // ({ memberNumber, firstName, lastName, status, role }) or nested under
+  // `member` ({ role, member: { memberNumber, firstName, lastName, status } }).
+  // Adjust this once the real /users response shape is confirmed.
+  function normalizeUser(raw) {
+    const member = raw.member || raw;
+    return {
+      id: member.memberNumber || raw.memberNumber,
+      name: `${member.firstName || ""} ${member.lastName || ""}`.trim(),
+      status: (member.status || "").toLowerCase(),
+      role: (raw.role || member.role || "").toLowerCase() || undefined,
+    };
+  }
+
+  async function loadData() {
+    isLoading = true;
+    loadError = null;
+    render();
+
+    try {
+      if (mode === "admin") {
+        const data = await App.api.getUsers();
+        const list = Array.isArray(data) ? data : data?.users || [];
+        members = list.map(normalizeUser);
+      } else {
+        const data = await App.api.getMembers();
+        const list = Array.isArray(data) ? data : data?.members || [];
+        members = list.map(normalizeMember);
+      }
+    } catch (err) {
+      loadError = err.message || "Couldn't load data.";
+      members = [];
+    } finally {
+      isLoading = false;
+      render();
+    }
+  }
 
   function initials(name) {
     return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
@@ -63,7 +121,7 @@ window.App = window.App || {};
 
   // Placeholder — wire this up to an actual detail view/panel.
   function openDetail(member) {
-    console.log("Open member:", member.name);
+    console.log("Open member:", member.id, member.name);
   }
 
   function setMode(newMode) {
@@ -74,6 +132,7 @@ window.App = window.App || {};
       newMode = "door";
     }
 
+    const modeChanged = newMode !== mode;
     mode = newMode;
 
     const body = document.body;
@@ -103,7 +162,18 @@ window.App = window.App || {};
     }
 
     currentPage = 1;
-    render();
+
+    // Each mode pulls from a different endpoint (Door: /members, Admin:
+    // /users), so switching modes means fetching fresh data, not just
+    // re-filtering what's already loaded. Also always fetch on the very
+    // first call (from init), since modeChanged is false when the default
+    // mode matches the initial `mode` value.
+    if (modeChanged || !hasLoadedOnce) {
+      hasLoadedOnce = true;
+      loadData();
+    } else {
+      render();
+    }
   }
 
   function render() {
@@ -116,12 +186,31 @@ window.App = window.App || {};
     const nextPage = document.getElementById("nextPage");
     if (!list) return; // members view isn't on this page
 
+    if (isLoading) {
+      list.innerHTML = "";
+      empty.textContent = "Loading members…";
+      empty.style.display = "block";
+      pagination.style.display = "none";
+      count.textContent = "";
+      return;
+    }
+
+    if (loadError) {
+      list.innerHTML = "";
+      empty.textContent = `Couldn't load members: ${loadError}`;
+      empty.style.display = "block";
+      pagination.style.display = "none";
+      count.textContent = "";
+      return;
+    }
+
     const filtered = members.filter((m) => matchesFilter(m) && matchesSearch(m));
 
     count.textContent = ` (${filtered.length})`;
     list.innerHTML = "";
 
     if (filtered.length === 0) {
+      empty.textContent = "No members match this filter.";
       empty.style.display = "block";
       pagination.style.display = "none";
       return;
@@ -293,7 +382,7 @@ window.App = window.App || {};
     setMode(mode);
   }
 
-  window.App.members = { init, openDetail, setMode };
+  window.App.members = { init, openDetail, setMode, loadData };
 
   document.addEventListener("DOMContentLoaded", init);
 

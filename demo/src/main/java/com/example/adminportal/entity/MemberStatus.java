@@ -1,4 +1,4 @@
-package com.example.demo.entity;
+package com.example.adminportal.entity;
 
 public enum MemberStatus {
     ACTIVE,
