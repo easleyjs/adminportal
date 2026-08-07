@@ -8,3 +8,13 @@ Accept: application/json
 
 GET http://localhost:8080/api/members/4
 Accept: application/json
+
+### Create a test member
+POST http://localhost:8080/api/members
+Content-Type: application/json
+
+{
+  "firstName": "Josh",
+  "lastName": "Easley",
+  "email": "josh@java.com"
+}

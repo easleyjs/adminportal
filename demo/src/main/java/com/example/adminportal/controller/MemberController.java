@@ -1,13 +1,13 @@
 package com.example.adminportal.controller;
 
+import com.example.adminportal.dto.MemberCreateRequest;
 import com.example.adminportal.dto.MemberResponse;
 import com.example.adminportal.entity.Member;
 import com.example.adminportal.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,6 +29,16 @@ public class MemberController {
     @GetMapping("/members/{id}")
     public MemberResponse findById(@PathVariable Long id) {
         return memberService.findMemberById(id);
+    }
+
+    @PostMapping("/members")
+    public ResponseEntity<MemberResponse> createMember(@RequestBody MemberCreateRequest memberRequest) {
+
+        MemberResponse createdMember = memberService.createMember(memberRequest);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(createdMember);
     }
 
 }

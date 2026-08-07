@@ -20,10 +20,12 @@ public class Member {
     private Long id;
 
     //TODO: Set nullable = false, unique = true, updatable = false later
+    //System/admin reference id
     @Column(nullable = true, unique = false, updatable = true)
     private UUID membershipId;
 
     //TODO: Set nullable = false, unique = true, updatable = false later
+    //Public-visible, Staff-friendly member reference number "M01234"
     @Column(nullable = true, unique = false, updatable = true)
     private int memberNumber;
 
@@ -64,11 +66,13 @@ public class Member {
             String firstName,
             String lastName,
             String email,
+            UUID membershipId,
             int memberNumber
     ) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.membershipId = membershipId;
         this.memberNumber = memberNumber;
     }
 }
