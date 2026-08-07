@@ -5,7 +5,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -25,7 +28,7 @@ public class Member {
     private UUID membershipId;
 
     //TODO: Set nullable = false, unique = true, updatable = false later
-    //Public-visible, Staff-friendly member reference number "M01234"
+    //Public-visible, Staff-friendly member reference number "Member: 01234"
     @Column(nullable = true, unique = false, updatable = true)
     private int memberNumber;
 
@@ -60,7 +63,15 @@ public class Member {
     private String lastName;
 
     @Enumerated(EnumType.STRING)
-    private MemberStatus status;
+    private MemberStatus status = MemberStatus.ACTIVE;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private Instant updatedAt;
 
     public Member(
             String firstName,
