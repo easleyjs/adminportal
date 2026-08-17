@@ -1,7 +1,7 @@
 /* door.js
  * Camera scanner and check-in result.
- * TODO: implement — this is a placeholder so router.js has something to
- * call when the Door view is shown.
+ * TODO: camera scanning itself is still a placeholder — this is a
+ * stub so router.js has something to call when the Door view is shown.
  */
 window.App = window.App || {};
 
@@ -13,6 +13,19 @@ window.App = window.App || {};
     // outcome (member name, status, allow/deny) in the Door view.
   }
 
-  window.App.door = { init };
+  // Manual check-in — triggered from the member detail modal when a scan
+  // didn't work or someone's doing a manual search at the door.
+  async function checkInMember(member) {
+    try {
+      const result = await App.api.checkInManual(member.id);
+      // TODO: show a proper check-in confirmation, same as the scan flow will
+      return result;
+    } catch (err) {
+      console.error("Manual check-in failed:", err.message);
+      throw err;
+    }
+  }
+
+  window.App.door = { init, checkInMember };
 
 })();

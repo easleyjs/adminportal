@@ -13,7 +13,11 @@ window.App = window.App || {};
 
   const ROLES = { ADMIN: "admin", STAFF: "staff", MEMBER: "member" };
 
-  let currentUser = null; // { id, name, role }
+  // TEMP (dev/testing only): defaulting to a fake admin so Admin mode is
+  // reachable without a real login flow yet. Once App.api login/session
+  // checking is wired up, change this back to `let currentUser = null;`
+  // and let requireAuth()/getCurrentUser() do their job for real.
+  let currentUser = { id: "demo-user", name: "Demo Admin", role: ROLES.ADMIN }; // { id, name, role }
 
   async function login(username, password) {
     // DEMO ONLY — there's no backend yet, so this fakes a network call.

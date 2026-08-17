@@ -101,6 +101,12 @@ window.App = window.App || {};
     checkIn(qrPayload) {
       return request("/door/check-in", { method: "POST", body: { qrPayload } });
     },
+    // Manual check-in from the member card (scan failed / no phone, etc).
+    // ASSUMPTION: same endpoint, keyed by memberId instead of a QR payload —
+    // adjust if the backend expects something different.
+    checkInManual(memberId) {
+      return request("/door/check-in", { method: "POST", body: { memberId, method: "manual" } });
+    },
   };
 
   window.App.api = api;

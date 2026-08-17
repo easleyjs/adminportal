@@ -46,31 +46,34 @@ window.App = window.App || {};
   let searchTerm = "";
   let pageSize = 10;
   let currentPage = 1;
-  let mode = "door"; // "door" | "admin" — Door is the default; Admin requires the admin role
+  let mode = "admin"; // "door" | "admin" — TEMP: defaulted to admin for testing; flip back to "door" before shipping
 
   // Door view — GET /api/members returns:
-  //   { memberNumber: <int>, firstName, lastName, status: "ACTIVE" | "INACTIVE" }
+  //   { memberNumber: <int>, firstName, lastName, status: "ACTIVE" | "INACTIVE", email }
   // No role info here, and Door staff don't need it.
   function normalizeMember(raw) {
     return {
       id: raw.memberNumber,
       name: `${raw.firstName || ""} ${raw.lastName || ""}`.trim(),
       status: (raw.status || "").toLowerCase(),
+      email: raw.email || "",
       role: undefined,
     };
   }
 
   // Admin view — GET /api/users. AppUser <-> Member is 1:1, so this is
   // assumed to return the member fields plus `role` — either flattened
-  // ({ memberNumber, firstName, lastName, status, role }) or nested under
-  // `member` ({ role, member: { memberNumber, firstName, lastName, status } }).
-  // Adjust this once the real /users response shape is confirmed.
+  // ({ memberNumber, firstName, lastName, status, email, role }) or nested
+  // under `member` ({ role, member: { memberNumber, firstName, lastName,
+  // status, email } }). Adjust this once the real /users response shape is
+  // confirmed.
   function normalizeUser(raw) {
     const member = raw.member || raw;
     return {
       id: member.memberNumber || raw.memberNumber,
       name: `${member.firstName || ""} ${member.lastName || ""}`.trim(),
       status: (member.status || "").toLowerCase(),
+      email: member.email || raw.email || "",
       role: (raw.role || member.role || "").toLowerCase() || undefined,
     };
   }
@@ -119,9 +122,50 @@ window.App = window.App || {};
     return m.name.toLowerCase().includes(searchTerm.trim().toLowerCase());
   }
 
-  // Placeholder — wire this up to an actual detail view/panel.
+  let activeMember = null;
+
   function openDetail(member) {
-    console.log("Open member:", member.id, member.name);
+    activeMember = member;
+
+    const overlay = document.getElementById("memberModalOverlay");
+    const avatar = document.getElementById("modalAvatar");
+    const name = document.getElementById("modalName");
+    const memberNumber = document.getElementById("modalMemberNumber");
+    const status = document.getElementById("modalStatus");
+    const statusText = document.getElementById("modalStatusText");
+    const email = document.getElementById("modalEmail");
+    const actions = document.getElementById("modalActions");
+    const checkInBtn = document.getElementById("modalCheckInBtn");
+    const suspendBtn = document.getElementById("modalSuspendBtn");
+    const reissueBtn = document.getElementById("modalReissueBtn");
+
+    avatar.textContent = initials(member.name);
+    name.textContent = member.name || "—";
+    memberNumber.textContent = `Member #${member.id}`;
+    status.className = `badge badge-status is-${member.status}`;
+    statusText.textContent = member.status === "active" ? "ACTIVE" : "INACTIVE";
+    email.textContent = member.email || "—";
+
+    // Edit/Suspend/Reissue QR are available in both modes now. Check In is
+    // Door-only — it's for manual entries when a scan didn't work.
+    actions.style.display = "flex";
+    checkInBtn.style.display = mode === "door" ? "" : "none";
+
+    const isActive = member.status === "active";
+    suspendBtn.textContent = isActive ? "Suspend" : "Reactivate";
+    suspendBtn.classList.toggle("is-reactivate", !isActive);
+    suspendBtn.disabled = false;
+    reissueBtn.disabled = false;
+    reissueBtn.textContent = "Reissue QR";
+    checkInBtn.disabled = false;
+    checkInBtn.textContent = "Check In";
+
+    overlay.classList.add("open");
+  }
+
+  function closeDetail() {
+    document.getElementById("memberModalOverlay").classList.remove("open");
+    activeMember = null;
   }
 
   function setMode(newMode) {
@@ -281,6 +325,12 @@ window.App = window.App || {};
     const logoutBtn = document.getElementById("logoutBtn");
     const switchModeBtn = document.getElementById("switchModeBtn");
     const scanBtn = document.getElementById("scanBtn");
+    const memberModalOverlay = document.getElementById("memberModalOverlay");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
+    const modalCheckInBtn = document.getElementById("modalCheckInBtn");
+    const modalEditBtn = document.getElementById("modalEditBtn");
+    const modalSuspendBtn = document.getElementById("modalSuspendBtn");
+    const modalReissueBtn = document.getElementById("modalReissueBtn");
 
     if (!chips) return; // members view isn't on this page
 
@@ -352,7 +402,10 @@ window.App = window.App || {};
     });
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeUserMenu();
+      if (e.key === "Escape") {
+        closeUserMenu();
+        closeDetail();
+      }
     });
 
     profileBtn.addEventListener("click", () => {
@@ -375,6 +428,76 @@ window.App = window.App || {};
       // Placeholder — this will launch the scan popup later
       console.log("Scan clicked");
     });
+
+    // Member detail modal
+    modalCloseBtn.addEventListener("click", closeDetail);
+
+    memberModalOverlay.addEventListener("click", (e) => {
+      if (e.target === memberModalOverlay) closeDetail();
+    });
+
+    modalCheckInBtn.addEventListener("click", async () => {
+      if (!activeMember) return;
+
+      modalCheckInBtn.disabled = true;
+      modalCheckInBtn.textContent = "Checking in…";
+
+      try {
+        await App.door.checkInMember(activeMember);
+        modalCheckInBtn.textContent = "Checked in ✓";
+        setTimeout(() => {
+          modalCheckInBtn.disabled = false;
+          modalCheckInBtn.textContent = "Check In";
+        }, 1500);
+      } catch (err) {
+        modalCheckInBtn.disabled = false;
+        modalCheckInBtn.textContent = "Check In";
+        alert(`Couldn't check in: ${err.message}`);
+      }
+    });
+
+    modalEditBtn.addEventListener("click", () => {
+      // Placeholder — open an edit form for activeMember here
+      console.log("Edit clicked:", activeMember?.id);
+    });
+
+    modalSuspendBtn.addEventListener("click", async () => {
+      if (!activeMember) return;
+      const nextStatus = activeMember.status === "active" ? "INACTIVE" : "ACTIVE";
+
+      modalSuspendBtn.disabled = true;
+      modalSuspendBtn.textContent = "Updating…";
+
+      try {
+        await App.admin.changeStatus(activeMember.id, nextStatus);
+        closeDetail();
+        loadData(); // refresh the list so the card reflects the new status
+      } catch (err) {
+        modalSuspendBtn.disabled = false;
+        modalSuspendBtn.textContent = activeMember.status === "active" ? "Suspend" : "Reactivate";
+        alert(`Couldn't update status: ${err.message}`);
+      }
+    });
+
+    modalReissueBtn.addEventListener("click", async () => {
+      if (!activeMember) return;
+
+      modalReissueBtn.disabled = true;
+      modalReissueBtn.textContent = "Reissuing…";
+
+      try {
+        await App.admin.reissueQr(activeMember.id);
+        modalReissueBtn.textContent = "Reissued ✓";
+        setTimeout(() => {
+          modalReissueBtn.disabled = false;
+          modalReissueBtn.textContent = "Reissue QR";
+        }, 1500);
+      } catch (err) {
+        modalReissueBtn.disabled = false;
+        modalReissueBtn.textContent = "Reissue QR";
+        alert(`Couldn't reissue QR: ${err.message}`);
+      }
+    });
   }
 
   function init() {
@@ -382,7 +505,7 @@ window.App = window.App || {};
     setMode(mode);
   }
 
-  window.App.members = { init, openDetail, setMode, loadData };
+  window.App.members = { init, openDetail, closeDetail, setMode, loadData };
 
   document.addEventListener("DOMContentLoaded", init);
 

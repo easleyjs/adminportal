@@ -736,6 +736,17 @@ main{
   background: #63d9cf;
 }
 
+.modal-btn-checkin{
+  background: var(--scan-green);
+  border-color: var(--scan-green);
+  color: #06210f;
+  font-weight: 700;
+}
+
+.modal-btn-checkin:hover{
+  background: var(--scan-green-hover);
+}
+
 @media (prefers-reduced-motion: reduce){
   *{ transition: none !important; }
 }
