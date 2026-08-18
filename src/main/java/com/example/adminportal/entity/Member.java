@@ -25,7 +25,7 @@ public class Member {
     //TODO: Set nullable = false, unique = true, updatable = false later
     //System/admin reference id
     @Column(nullable = true, unique = false, updatable = true)
-    private UUID membershipId;
+    private UUID memberId;
 
     //TODO: Set nullable = false, unique = true, updatable = false later
     //Public-visible, Staff-friendly member reference number "Member: 01234"
@@ -77,13 +77,13 @@ public class Member {
             String firstName,
             String lastName,
             String email,
-            UUID membershipId,
+            UUID memberId,
             int memberNumber
     ) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.membershipId = membershipId;
+        this.memberId = memberId;
         this.memberNumber = memberNumber;
     }
 }
