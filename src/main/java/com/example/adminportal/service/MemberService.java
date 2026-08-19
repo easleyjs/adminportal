@@ -30,12 +30,17 @@ public class MemberService {
 
     //TODO: Implement sequence-based memberId once that exists in db
     public MemberResponse createMember(MemberCreateRequest memberRequest) {
+
+        Long memberNumber = (long) (Math.random() * 10);
+        // once sequence is in place - memberRepository.getNextMemberNumber();
+        String qrToken = UUID.randomUUID().toString();
+
         Member newMember = new Member(
                 memberRequest.firstName(),
                 memberRequest.lastName(),
                 memberRequest.email(),
-                UUID.randomUUID(),
-                (int) (Math.random() * 10)
+                memberNumber,
+                qrToken
         );
         return MemberResponse.from(
                 memberRepository.save(newMember)

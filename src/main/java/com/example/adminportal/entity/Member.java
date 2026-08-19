@@ -17,53 +17,34 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Setter(AccessLevel.NONE)
-    private Long id;
+    @Column(nullable = false, updatable = false)
+    private UUID id;
 
-    //TODO: Set nullable = false, unique = true, updatable = false later
-    //System/admin reference id
-    @Column(nullable = true, unique = false, updatable = true)
-    private UUID memberId;
+    @Setter(AccessLevel.NONE)
+    @Column(nullable = false, unique = true, updatable = false)
+    private Long memberNumber;
 
-    //TODO: Set nullable = false, unique = true, updatable = false later
-    //Public-visible, Staff-friendly member reference number "Member: 01234"
-    @Column(nullable = true, unique = false, updatable = true)
-    private int memberNumber;
+    private Long wooCustomerId;
 
-    /*
-    //TODO: Add sequence to db:
-       CREATE SEQUENCE member_number_seq
-       START WITH 1001
-       INCREMENT BY 1;
+    private Long wooSubscriptionId;
 
-    //TODO: Add callable query to repository:
-    @Query(value = "SELECT nextval('member_number_seq')", nativeQuery = true)
-    Long getNextMemberNumber();
+    @Column(nullable = false, unique = true)
+    private String qrToken;
 
-    //TODO: Generate sequence ids in member creation service
-    @Transactional
-    public Member createMember(...) {
-        Member member = new Member();
-
-        member.setMembershipId(UUID.randomUUID());
-        member.setMemberNumber(memberRepository.getNextMemberNumber());
-
-        // other fields...
-
-        return memberRepository.save(member);
-    }
-     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MemberStatus status = MemberStatus.ACTIVE;
 
     @Column(nullable = false, unique = true)
     private String email;
 
     private String firstName;
-    private String lastName;
 
-    @Enumerated(EnumType.STRING)
-    private MemberStatus status = MemberStatus.ACTIVE;
+    private String lastName;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -73,17 +54,30 @@ public class Member {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    // Remove after testing/deployment
+    public Member(
+            String firstName,
+            String lastName,
+            String email
+    ) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.memberNumber = (long) (Math.random() * 10);
+        this.qrToken = UUID.randomUUID().toString();
+    }
+
     public Member(
             String firstName,
             String lastName,
             String email,
-            UUID memberId,
-            int memberNumber
+            Long memberNumber,
+            String qrToken
     ) {
-        this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.memberId = memberId;
+        this.email = email;
         this.memberNumber = memberNumber;
+        this.qrToken = qrToken;
     }
 }
