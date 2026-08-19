@@ -4,16 +4,16 @@ import com.example.adminportal.dto.AppUserCreateRequest;
 import com.example.adminportal.entity.AppUser;
 import com.example.adminportal.entity.Member;
 import com.example.adminportal.repository.MemberRepository;
-import com.example.adminportal.repository.UserRepository;
+import com.example.adminportal.repository.AppUserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AppUserService {
-    private UserRepository appUserRepo;
+    private AppUserRepository appUserRepo;
     private MemberRepository memberRepo;
 
     public AppUserService(
-            UserRepository appUserRepo,
+            AppUserRepository appUserRepo,
             MemberRepository memberRepo
     ) {
         this.appUserRepo = appUserRepo;
@@ -33,7 +33,6 @@ public class AppUserService {
 
         AppUser appUser = new AppUser(
                 member,
-                request.username(),
                 request.password(), //passwordEncoder.encode(request.password()),
                 request.role()
         );
