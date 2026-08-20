@@ -2,7 +2,6 @@ package com.example.adminportal.controller;
 
 import com.example.adminportal.dto.AppUserCreateRequest;
 import com.example.adminportal.dto.AppUserResponse;
-import com.example.adminportal.dto.MemberResponse;
 import com.example.adminportal.entity.AppUser;
 import com.example.adminportal.service.AppUserService;
 import org.springframework.http.HttpStatus;
@@ -10,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -23,6 +23,11 @@ public class AppUserController {
     @GetMapping()
     public List<AppUserResponse> findAll() {
         return appUserService.getAllAppUsers();
+    }
+
+    @GetMapping("/{id}")
+    public AppUserResponse findByMember_Id(@PathVariable UUID id) {
+        return appUserService.findAppUserById(id);
     }
 
     @PostMapping
