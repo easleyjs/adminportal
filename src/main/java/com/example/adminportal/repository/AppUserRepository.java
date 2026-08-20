@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface AppUserRepository extends JpaRepository<AppUser,Long> {
     boolean existsByMember_Id(UUID id);
+    AppUser findById(UUID id);
 }

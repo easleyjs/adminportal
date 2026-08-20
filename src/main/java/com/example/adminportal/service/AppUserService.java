@@ -1,11 +1,15 @@
 package com.example.adminportal.service;
 
 import com.example.adminportal.dto.AppUserCreateRequest;
+import com.example.adminportal.dto.AppUserResponse;
 import com.example.adminportal.entity.AppUser;
 import com.example.adminportal.entity.Member;
 import com.example.adminportal.repository.MemberRepository;
 import com.example.adminportal.repository.AppUserRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AppUserService {
@@ -18,6 +22,17 @@ public class AppUserService {
     ) {
         this.appUserRepo = appUserRepo;
         this.memberRepo = memberRepo;
+    }
+
+    public List<AppUserResponse> getAllAppUsers() {
+        return appUserRepo.findAll()
+                .stream()
+                .map(AppUserResponse::from)
+                .toList();
+    }
+
+    public AppUserResponse findAppUserById(UUID id) {
+        return AppUserResponse.from(appUserRepo.findById(id));
     }
 
     public AppUser createUser(AppUserCreateRequest request) {
