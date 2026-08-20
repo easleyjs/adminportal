@@ -2,14 +2,14 @@ package com.example.adminportal.controller;
 
 import com.example.adminportal.dto.AppUserCreateRequest;
 import com.example.adminportal.dto.AppUserResponse;
+import com.example.adminportal.dto.MemberResponse;
 import com.example.adminportal.entity.AppUser;
 import com.example.adminportal.service.AppUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -18,6 +18,11 @@ public class AppUserController {
 
     public AppUserController(AppUserService appUserService) {
         this.appUserService = appUserService;
+    }
+
+    @GetMapping()
+    public List<AppUserResponse> findAll() {
+        return appUserService.getAllAppUsers();
     }
 
     @PostMapping
