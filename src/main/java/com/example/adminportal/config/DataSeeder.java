@@ -1,6 +1,9 @@
 package com.example.adminportal.config;
 
+import com.example.adminportal.entity.AppUser;
 import com.example.adminportal.entity.Member;
+import com.example.adminportal.entity.UserRole;
+import com.example.adminportal.repository.AppUserRepository;
 import com.example.adminportal.repository.MemberRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -15,15 +18,17 @@ import java.util.UUID;
 public class DataSeeder {
 
     @Bean
-    CommandLineRunner seedMembers(MemberRepository memberRepository) {
+    CommandLineRunner seedMembers(
+            MemberRepository memberRepo,
+            AppUserRepository appUserRepo
+    ) {
         return args -> {
 
-            if (memberRepository.count() == 0) {
-                memberRepository.saveAll(List.of(
+            if (memberRepo.count() == 0) {
+                memberRepo.saveAll(List.of(
                         new Member("Peter", "Murphy", "p@bauhaus.com"),
                         new Member("Bill", "Leeb", "keys@fla.com"),
-                        new Member("Siouxsie", "Sue", "siouxsie@banshees.com"),
-                        new Member("Wren", "Scheit", "wren@outland.com"),
+                        new Member("Siouxsie", "Sioux", "siouxsie@banshees.com"),
                         new Member("Andrew", "Eldritch", "sister@thesistersofmercy.com"),
                         new Member("Robert", "Smith", "disintegration@thecure.com"),
                         new Member("Nivek", "Ogre", "ogre@skinnypuppy.com"),
@@ -33,6 +38,23 @@ public class DataSeeder {
                         new Member("Dave", "Gahan", "violator@depechemode.com")
                 ));
             }
+
+            Member member = new Member(
+                    "Josh",
+                    "Test",
+                    "josh@example.com"
+            );
+
+            member = memberRepo.save(member);
+
+            AppUser user = new AppUser(
+                    member,
+                    "password",
+                    UserRole.ADMIN
+            );
+
+            appUserRepo.save(user);
+
         };
     }
 }
